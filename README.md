@@ -1,4 +1,4 @@
-# Masters-thesis_How-to-find-Decision-Trees-that-are-Optimal
+# [Master's thesis] How to find Decision Trees that are Optimal
 
 Decision trees are one of the most popular types of predictive models in machine learning: they are not only sufficiently accurate in many applications, but also provide models that are interpretable. 
 
