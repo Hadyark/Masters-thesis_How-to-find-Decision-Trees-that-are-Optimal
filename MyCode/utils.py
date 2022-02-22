@@ -1,4 +1,5 @@
 import ast
+import math
 import uuid
 
 import numpy as np
@@ -153,25 +154,35 @@ def plot2(x_axe, y_axe, r):
     plt.show()
 
 
-def plot_one_scatter_by_depth(x_axe, y_axe, r, x_lim, y_lim):
+def plot_one_scatter_by_depth(x_axe, y_axe, r, x_lim=None, y_lim=None):
     for k in r['k'].unique():
-        fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(18, 9))
+        #nrows = math.ceil(len(r['depth'].unique()) / 4)
+        nrows=2
+        fig, axes = plt.subplots(nrows=nrows, ncols=4, figsize=(18, 9))
+        ax_row = 0
+        ax_col = 0
         for depth in r['depth'].unique():
-            if depth > 4:
-                ax = axes[1][depth - 5]
+            if ax_col == 4:
+                ax_col = 0
+                ax_row += 1
+            if nrows == 1:
+                ax = axes[ax_col]
             else:
-                ax = axes[0][depth - 1]
+                ax = axes[ax_row][ax_col]
             rr = r.loc[(r["k"] == k) & (r["depth"] == depth)]
             x = rr[x_axe].tolist()
             y = rr[y_axe].tolist()
             for i in range(0, len(x)):
-                ax.set_ylim(y_lim[0], y_lim[1])
-                ax.set_xlim(x_lim[0], x_lim[1])
+                if y_lim is not None:
+                    ax.set_ylim(y_lim[0], y_lim[1])
+                if x_lim is not None:
+                    ax.set_xlim(x_lim[0], x_lim[1])
                 ax.scatter(x[i], y[i], s=10)
             ax.set_xlabel(x_axe)
             ax.set_ylabel(y_axe)
             ax.title.set_text('depth=' + str(depth))
-        fig.delaxes(axes[1][3])
+            ax_col += 1
+        # fig.delaxes(axes[1][3])
         plt.subplots_adjust(wspace=0.5, hspace=0.5)
         suptitle('k:' + str(k))
         plt.show()
@@ -185,62 +196,8 @@ def sum_elem_tree(tree, label, s=None, bool=True):
         sum_elem_tree(tree['right'], label, s)
     else:
         s.append(abs(tree[label]))
-    if bool == False:
+    if not bool:
         return sum(s)
-
-
-def ssss(y_axe, r, x_lim, y_lim):
-    # r = r.loc[r["min_supp"] == 1]
-    for k in r['k'].unique():
-        fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(18, 9))
-        for depth in r['depth'].unique():
-            if depth > 4:
-                ax = axes[1][depth - 5]
-            else:
-                ax = axes[0][depth - 1]
-            rr = r.loc[(r["k"] == k) & (r["depth"] == depth)]
-            x = list()
-            for tree in rr["tree"]:
-                x.append(sum_elem_tree(ast.literal_eval(tree), 'discrimination_additive', s=list(), bool=False))
-            y = rr[y_axe].tolist()
-            for i in range(0, len(x)):
-                ax.set_ylim(y_lim[0], y_lim[1])
-                ax.set_xlim(x_lim[0], x_lim[1])
-                ax.scatter(x[i], y[i], s=10)
-            ax.set_xlabel("discri_additive")
-            ax.set_ylabel(y_axe)
-            ax.title.set_text('depth=' + str(depth))
-        fig.delaxes(axes[1][3])
-        plt.subplots_adjust(wspace=0.5, hspace=0.5)
-        suptitle('k:' + str(k))
-        plt.show()
-
-
-def ssss2(y_axe, r, x_lim, y_lim):
-    # r = r.loc[r["min_supp"] == 1]
-    for k in r['k'].unique():
-        fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(18, 9))
-        for depth in r['depth'].unique():
-            if depth > 4:
-                ax = axes[1][depth - 5]
-            else:
-                ax = axes[0][depth - 1]
-            rr = r.loc[(r["k"] == k) & (r["depth"] == depth)]
-            y = list()
-            for tree in rr["tree"]:
-                y.append(sum_elem_tree(ast.literal_eval(tree), 'discrimination_additive', s=list(), bool=False))
-            x = rr[y_axe].tolist()
-            for i in range(0, len(x)):
-                ax.set_ylim(y_lim[0], y_lim[1])
-                ax.set_xlim(x_lim[0], x_lim[1])
-                ax.scatter(x[i], y[i], s=10)
-            ax.set_ylabel("discri_additive")
-            ax.set_xlabel(y_axe)
-            ax.title.set_text('depth=' + str(depth))
-        fig.delaxes(axes[1][3])
-        plt.subplots_adjust(wspace=0.5, hspace=0.5)
-        suptitle('k:' + k)
-        plt.show()
 
 
 from matplotlib.legend_handler import HandlerBase
@@ -259,12 +216,13 @@ plt.rcParams['figure.figsize'] = [9, 6]
 def plot_k_depth_mean(x_axe, y_axe, r, x_lim=None, y_lim=None):
     plt.figure(figsize=(9, 6))
 
-    markers = ['o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X']
+    # markers = ['o', '^', '>', 'v', '<', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X']
+    markers = ['o', 'x', 's', 'd', 'p', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X']
     fillstyles = ['full', 'left', 'right', 'bottom', 'top', 'none']
     colors = ['#006400', '#00008b', '#b03060', '#ff4500', '#ffd700', '#7cfc00', '#00ffff', '#ff00ff', '#6495ed',
               '#ffdab9']
     fig, ax = plt.subplots()
-    index_color=0
+    index_color = 0
     for k in r['k'].unique():
         index_mark = 0
         for depth in r['depth'].unique():
@@ -286,38 +244,44 @@ def plot_k_depth_mean(x_axe, y_axe, r, x_lim=None, y_lim=None):
 
     ax.legend(list(zip(list_color, list_mak)), list_lab,
               handler_map={tuple: MarkerHandler()}, ncol=3)
-    if y_lim != None:
+    if y_lim is not None:
         ax.set_ylim(y_lim[0], y_lim[1])
-    if x_lim != None:
+    if x_lim is not None:
         ax.set_xlim(x_lim[0], x_lim[1])
     plt.show()
 
 
 def plot_each_k_depth_mean(x_axe, y_axe, r, x_lim=None, y_lim=None):
-    fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(18, 9))
+    # nrows = math.ceil(len(r['depth'].unique()) / 4)
+    nrows = 2
+    fig, axes = plt.subplots(nrows=nrows, ncols=4, figsize=(18, 9))
 
-    index_ax = 0
+    colors = ['#006400', '#00008b', '#b03060', '#ff4500', '#ffd700', '#7cfc00', '#00ffff', '#ff00ff', '#6495ed',
+              '#ffdab9']
+    ax_row = 0
+    ax_col = 0
     for depth in r['depth'].unique():
-        if index_ax < 4:
-            ax = axes[0][index_ax]
+        if ax_col == 4:
+            ax_col = 0
+            ax_row += 1
+        if nrows == 1:
+            ax = axes[ax_col]
         else:
-            ax = axes[1][index_ax - 4]
-        index_ax += 1
-
-        colors = ['#006400', '#00008b', '#b03060', '#ff4500', '#ffd700', '#7cfc00', '#00ffff', '#ff00ff', '#6495ed',
-                  '#ffdab9']
+            ax = axes[ax_row][ax_col]
+        index_color = 0
         for k in r['k'].unique():
-            color = colors.pop()
             rr = r.loc[(r["k"] == k) & (r["depth"] == depth)]
-            if y_lim != None:
+            if y_lim is not None:
                 ax.set_ylim(y_lim[0], y_lim[1])
-            if x_lim != None:
+            if x_lim is not None:
                 ax.set_xlim(x_lim[0], x_lim[1])
 
-            ax.scatter(rr[x_axe].mean(), rr[y_axe].mean(), s=10, c=color)
+            ax.scatter(rr[x_axe].mean(), rr[y_axe].mean(), s=10, c=colors[index_color])
+            index_color += 1
         ax.set_ylabel(y_axe)
         ax.set_xlabel(x_axe)
         ax.title.set_text('depth= ' + str(depth))
+        ax_col += 1
     plt.subplots_adjust(wspace=0.5, hspace=0.5)
     plt.show()
 
@@ -381,3 +345,5 @@ def export_graphviz(clf):
     graph_string += "}"
 
     return graph_string
+
+# %%
