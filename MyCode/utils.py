@@ -156,8 +156,8 @@ def plot2(x_axe, y_axe, r):
 
 def plot_one_scatter_by_depth(x_axe, y_axe, r, x_lim=None, y_lim=None):
     for k in r['k'].unique():
-        #nrows = math.ceil(len(r['depth'].unique()) / 4)
-        nrows=2
+        # nrows = math.ceil(len(r['depth'].unique()) / 4)
+        nrows = 2
         fig, axes = plt.subplots(nrows=nrows, ncols=4, figsize=(18, 9))
         ax_row = 0
         ax_col = 0
@@ -195,7 +195,7 @@ def sum_elem_tree(tree, label, s=None, bool=True):
         sum_elem_tree(tree['left'], label, s)
         sum_elem_tree(tree['right'], label, s)
     else:
-        s.append(abs(tree[label]))
+        s.append(tree[label])
     if not bool:
         return sum(s)
 
@@ -313,10 +313,27 @@ def get_dot_body(treedict, parent=None, left=True):
         discr = str(int(treedict["discrimination_additive"])) if treedict["discrimination_additive"] - int(
             treedict["discrimination_additive"]) == 0 else str(
             round(treedict["discrimination_additive"], 3))
+        """
+        true_pos = str(int(treedict["true_pos"])) if treedict["true_pos"] - int(
+            treedict["true_pos"]) == 0 else str(
+            round(treedict["true_pos"], 3))
+        false_pos = str(int(treedict["false_pos"])) if treedict["false_pos"] - int(
+            treedict["false_pos"]) == 0 else str(
+            round(treedict["false_pos"], 3))
+        true_neg = str(int(treedict["true_neg"])) if treedict["true_neg"] - int(
+            treedict["true_neg"]) == 0 else str(
+            round(treedict["true_neg"], 3))
+        false_neg = str(int(treedict["false_neg"])) if treedict["false_neg"] - int(
+            treedict["false_neg"]) == 0 else str(
+            round(treedict["false_neg"], 3))
+            """
         # maxi = max(len(val), len(err))
         # val = val if len(val) == maxi else val + (" " * (maxi - len(val)))
         # err = err if len(err) == maxi else err + (" " * (maxi - len(err)))
-        gstring += "leaf_" + id + " [label=\"{{class|" + val + "}|{error|" + err + "}|{misclassified|" + misclassified + "}|{discrimination|" + discr + "}}\"];\n"
+        gstring += "leaf_" + id + " [label=\"{{class|" + val + "}|{error|" + err + "}|{misclassified|" + misclassified + "}|{discrimination|" + discr \
+                   + "}}\"];\n"
+                   #+ "}|{true positive|" + true_pos + "}|{false positive|" + false_pos + "}|{true negative|" + true_neg + "}|{false negative|" + false_neg \
+
         gstring += "node_" + parent + " -> leaf_" + id + " [label=" + str(int(left)) + "];\n"
     return gstring
 
