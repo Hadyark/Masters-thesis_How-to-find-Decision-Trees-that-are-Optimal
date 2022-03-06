@@ -2,6 +2,8 @@ import copy
 
 import numpy as np
 
+from MyCode import utils
+
 
 def discrimination2(dataset):
     length = len(dataset)
@@ -22,7 +24,6 @@ def discrimination2(dataset):
     # u1 = len(dataset[(dataset['Sensitive'] == 1) & (dataset['Class'] == 0) & (dataset['Pred'] == 0)])/lenght
     # v1 = len(dataset[(dataset['Sensitive'] == 1) & (dataset['Class'] == 1) & (dataset['Pred'] == 0)])/lenght
     # print(w1+w2+x1+x2+u1+u2+v1+v2)
-    print((w2, x2, u2, v2, b, b_not))
 
     return ((w2 + x2) / b_not) - ((u2 + v2) / b)
 
@@ -73,7 +74,7 @@ class Leaf:
         self.w = w
         self.x = x
 
-    def accuracy(self, n_one, n_zero):
+    def accuracy(self, n_zero, n_one):
         n = self.u + self.w
         p = self.v + self.x
         if p >= n:
@@ -124,7 +125,8 @@ def leafs_to_relabel(tree, y, sensitive, n_zero, n_one, leafs, length, path=tupl
             tree["disc"] = -(tree["u"] + tree["v"]) / n_one + (tree["w"] + tree["x"]) / n_zero
 
         leaf = Leaf(path, tree["u"] / length, tree["v"] / length, tree["w"] / length, tree["x"] / length)
-        leaf.accuracy(n_one, n_zero)
+        #leaf = Leaf(path, tree["u"], tree["v"], tree["w"], tree["x"])
+        leaf.accuracy(n_zero/length, n_one/length)
         if leaf.disc < 0:
             leafs.append(leaf)
 
@@ -145,7 +147,7 @@ def relab(tree, y, y_pred, sensitive, e):
     I = list()
     leafs_to_relabel(tree, y, sensitive, cnt[0], cnt[1], I, len(y))
     # 𝐿 := {}
-    L = set()
+    L = list()
     # while rem disc(𝐿) > 𝜖 do
     while rem_disc(disc_t, L, e) > e and I:
         # best l := arg max 𝑙∈ℐ∖𝐿 (disc 𝑙 /acc 𝑙 )
@@ -154,16 +156,16 @@ def relab(tree, y, y_pred, sensitive, e):
             if leaf.ratio > best_l.ratio:
                 best_l = leaf
         # 𝐿 := 𝐿 ∪ {𝑙}
-        L.add(best_l)
+        L.append(best_l)
         I.remove(best_l)
-        print(rem_disc(disc_t, L, e))
+        #print(rem_disc(disc_t, L, e))
     return L
 
 
-def browse_and_relab(tree, path):
+def browse_and_relab(tree, path, leaf):
     if path:
         p = path.pop(0)[1]
-        browse_and_relab(tree[p], path)
+        browse_and_relab(tree[p], path, leaf)
     else:
         if tree['value'] == 1:
             tree['value'] = 0

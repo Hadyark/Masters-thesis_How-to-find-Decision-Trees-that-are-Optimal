@@ -1,6 +1,8 @@
 import sys
 import unittest
 
+import numpy as np
+import pandas
 import pandas as pd
 
 from MyCode import relabeling

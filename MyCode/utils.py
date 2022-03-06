@@ -42,7 +42,6 @@ def discrimination(y, sensitive):
             if y[i] == 1.0:
                 p1 += 1
 
-    print(p1, p0, n_one, n_zero)
     if n_one == 0 and n_zero == 0:
         d = 0
     elif n_zero == 0:
