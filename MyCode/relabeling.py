@@ -84,7 +84,10 @@ class Leaf:
             self.acc = p - n
             self.disc = -(self.u + self.v) / n_one + (self.w + self.x) / n_zero
 
-        self.ratio = self.disc / self.acc
+        if self.acc == 0:
+            self.ratio = float('inf')
+        else:
+            self.ratio = self.disc / self.acc
 
     def __str__(self):
         return f"Path: {self.path} \naccuracy: {self.acc} \ndiscrimination: {self.disc} \nratio: {self.ratio} \ncontigency: \n{[self.u, self.v]}\n{[self.w, self.x]}"
@@ -125,8 +128,8 @@ def leafs_to_relabel(tree, y, sensitive, n_zero, n_one, leafs, length, path=tupl
             tree["disc"] = -(tree["u"] + tree["v"]) / n_one + (tree["w"] + tree["x"]) / n_zero
 
         leaf = Leaf(path, tree["u"] / length, tree["v"] / length, tree["w"] / length, tree["x"] / length)
-        #leaf = Leaf(path, tree["u"], tree["v"], tree["w"], tree["x"])
-        leaf.accuracy(n_zero/length, n_one/length)
+        # leaf = Leaf(path, tree["u"], tree["v"], tree["w"], tree["x"])
+        leaf.accuracy(n_zero / length, n_one / length)
         if leaf.disc < 0:
             leafs.append(leaf)
 
@@ -158,7 +161,30 @@ def relab(tree, y, y_pred, sensitive, e):
         # 𝐿 := 𝐿 ∪ {𝑙}
         L.append(best_l)
         I.remove(best_l)
-        #print(rem_disc(disc_t, L, e))
+        # print(rem_disc(disc_t, L, e))
+    return L
+
+
+def relab_leaf_limit(tree, y, y_pred, sensitive, leaf_limit):
+    disc_t = discrimination(y, y_pred, sensitive)
+    cnt = np.unique(sensitive, return_counts=True)[1]
+    # ℐ := { 𝑙 ∈ ℒ ∣ Δdisc 𝑙 < 0 }
+    I = list()
+    leafs_to_relabel(tree, y, sensitive, cnt[0], cnt[1], I, len(y))
+    # 𝐿 := {}
+    L = list()
+    # while rem disc(𝐿) > 𝜖 do
+    while leaf_limit > 0 and I:
+        # best l := arg max 𝑙∈ℐ∖𝐿 (disc 𝑙 /acc 𝑙 )
+        best_l = I[0]
+        for leaf in I:
+            if leaf.ratio > best_l.ratio:
+                best_l = leaf
+        # 𝐿 := 𝐿 ∪ {𝑙}
+        L.append(best_l)
+        I.remove(best_l)
+        leaf_limit -= 1
+        # print(rem_disc(disc_t, L, e))
     return L
 
 
@@ -171,3 +197,9 @@ def browse_and_relab(tree, path, leaf):
             tree['value'] = 0
         elif tree['value'] == 0:
             tree['value'] = 1
+
+#%%
+
+#%%
+
+#%%
