@@ -197,9 +197,3 @@ def browse_and_relab(tree, path, leaf):
             tree['value'] = 0
         elif tree['value'] == 0:
             tree['value'] = 1
-
-#%%
-
-#%%
-
-#%%

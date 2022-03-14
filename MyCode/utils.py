@@ -8,6 +8,8 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import suptitle
 from sklearn.exceptions import NotFittedError
 
+_COLORS = ['#8b4513', '#006400', '#4682b4', '#4b0082', '#ff0000', '#00ff7f', '#00ffff', '#0000ff', '#ffff54',
+          '#ff1493', '#ffe4c4']
 
 def train_test_split(random_state, X, y, sensitive):
     index_train = list(X.sample(frac=0.8, random_state=random_state).index)
@@ -118,8 +120,7 @@ def plot_mean(x_axe, y_axe, r, s1, s2):
     plt.figure(figsize=(9, 6))
     # style = ['solid', 'dotted', ':', '-.', 'dashed']
     style = ['solid', '–', '—', '-.', ':', '.', 'o', ',', 'v', '^']
-    colors = ['#006400', '#00008b', '#b03060', '#ff4500', '#ffd700', '#7cfc00', '#00ffff', '#ff00ff', '#6495ed',
-              '#ffdab9']
+    colors = _COLORS.copy()
     fig, ax = plt.subplots()
     for k in r['k'].unique():
         y_values = list()
@@ -188,15 +189,19 @@ def plot_one_scatter_by_depth(x_axe, y_axe, r, x_lim=None, y_lim=None):
         plt.show()
 
 
-def sum_elem_tree(tree, label, s=None, bool=True):
+def sum_elem_tree(tree, label, s=None, do_abs=False):
+    isFirst = False
     if s is None:
         s = list()
+        isFirst= True
     if 'feat' in tree:
-        sum_elem_tree(tree['left'], label, s)
-        sum_elem_tree(tree['right'], label, s)
+        sum_elem_tree(tree['left'], label, s=s, do_abs=False)
+        sum_elem_tree(tree['right'], label, s=s, do_abs=True)
+    elif do_abs:
+        s.append(abs(tree[label]))
     else:
         s.append(tree[label])
-    if not bool:
+    if isFirst:
         return sum(s)
 
 
@@ -219,8 +224,7 @@ def plot_k_depth_mean(x_axe, y_axe, r, x_lim=None, y_lim=None):
     # markers = ['o', '^', '>', 'v', '<', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X']
     markers = ['o', 'x', 's', 'd', 'p', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X']
     fillstyles = ['full', 'left', 'right', 'bottom', 'top', 'none']
-    colors = ['#006400', '#00008b', '#b03060', '#ff4500', '#ffd700', '#7cfc00', '#00ffff', '#ff00ff', '#6495ed',
-              '#ffdab9']
+    colors = _COLORS.copy()
     fig, ax = plt.subplots()
     index_color = 0
     for k in r['k'].unique():
@@ -256,8 +260,7 @@ def plot_each_k_depth_mean(x_axe, y_axe, r, x_lim=None, y_lim=None):
     nrows = 2
     fig, axes = plt.subplots(nrows=nrows, ncols=4, figsize=(18, 9))
 
-    colors = ['#006400', '#00008b', '#b03060', '#ff4500', '#ffd700', '#7cfc00', '#00ffff', '#ff00ff', '#6495ed',
-              '#ffdab9']
+    colors = _COLORS.copy()
     ax_row = 0
     ax_col = 0
     for depth in r['depth'].unique():
@@ -363,4 +366,3 @@ def export_graphviz(clf):
 
     return graph_string
 
-# %%
