@@ -77,7 +77,8 @@ class Leaf:
     def accuracy(self, n_zero, n_one):
         n = self.u + self.w
         p = self.v + self.x
-        if p >= n:
+        #TODO if p >= n:
+        if self.value == 1:
             self.acc = n - p
             self.disc = (self.u + self.v) / n_one - (self.w + self.x) / n_zero
         else:
@@ -85,7 +86,7 @@ class Leaf:
             self.disc = -(self.u + self.v) / n_one + (self.w + self.x) / n_zero
 
         if self.acc == 0:
-            self.ratio = float('inf')
+            self.ratio = self.disc / 0.0000000000000000000000000000000000001
         else:
             self.ratio = self.disc / self.acc
 
@@ -103,7 +104,7 @@ def leafs_to_relabel(tree, y, sensitive, n_zero, n_one, leafs, length, path=tupl
         tmp = path + ((tree['feat'], 'right'),)
         leafs_to_relabel(tree['right'], y, sensitive, n_zero, n_one, leafs, length, tmp)
     else:
-        tree = copy.deepcopy(tree)
+        #tree = copy.deepcopy(tree)
         tree["u"] = 0
         tree["v"] = 0
         tree["w"] = 0
@@ -120,15 +121,16 @@ def leafs_to_relabel(tree, y, sensitive, n_zero, n_one, leafs, length, path=tupl
                 """"""
         n = (tree["u"] + tree["w"])
         p = (tree["v"] + tree["x"])
-        if n <= p:
+        if tree["value"] == 1:
             tree["acc"] = n - p
             tree["disc"] = (tree["u"] + tree["v"]) / n_one - (tree["w"] + tree["x"]) / n_zero
         else:
             tree["acc"] = p - n
             tree["disc"] = -(tree["u"] + tree["v"]) / n_one + (tree["w"] + tree["x"]) / n_zero
-
+        tree["discrimination_additive3"] = utils.discr_add2(tree["transactions"], sensitive, tree["value"])
         leaf = Leaf(path, tree["u"] / length, tree["v"] / length, tree["w"] / length, tree["x"] / length)
         # leaf = Leaf(path, tree["u"], tree["v"], tree["w"], tree["x"])
+        leaf.value = tree["value"]
         leaf.accuracy(n_zero / length, n_one / length)
         if leaf.disc < 0:
             leafs.append(leaf)
@@ -161,7 +163,8 @@ def relab(tree, y, y_pred, sensitive, e):
         # 𝐿 := 𝐿 ∪ {𝑙}
         L.append(best_l)
         I.remove(best_l)
-        # print(rem_disc(disc_t, L, e))
+        #print(len(L))
+        #print(rem_disc(disc_t, L, e))
     return L
 
 
@@ -193,7 +196,15 @@ def browse_and_relab(tree, path, leaf):
         p = path.pop(0)[1]
         browse_and_relab(tree[p], path, leaf)
     else:
+        n = leaf.u + leaf.w
+        p = leaf.v + leaf.x
+        if p > n:
+            tree['value'] = 0
+        else:
+            tree['value'] = 1
+        """
         if tree['value'] == 1:
             tree['value'] = 0
         elif tree['value'] == 0:
             tree['value'] = 1
+        """

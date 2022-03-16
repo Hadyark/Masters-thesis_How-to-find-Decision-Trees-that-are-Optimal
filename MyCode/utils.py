@@ -9,7 +9,8 @@ from matplotlib.pyplot import suptitle
 from sklearn.exceptions import NotFittedError
 
 _COLORS = ['#8b4513', '#006400', '#4682b4', '#4b0082', '#ff0000', '#00ff7f', '#00ffff', '#0000ff', '#ffff54',
-          '#ff1493', '#ffe4c4']
+           '#ff1493', '#ffe4c4']
+
 
 def train_test_split(random_state, X, y, sensitive):
     index_train = list(X.sample(frac=0.8, random_state=random_state).index)
@@ -87,15 +88,38 @@ def discr_add(tids, y, sensitive):
     else:
         d = (p0 / n_zero) - (p1 / n_one)
 
-    # A higher discrimination means that tuples with
-    # Sensitive = 1 are less likely to be classified as positive
     return d
+
+
+def discr_add2(tids, sensitive, value):
+    """
+    p0: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 0, 𝑥.Class = +}∣
+    p1: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 1, 𝑥.Class = +}∣
+    n_zero: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 0}∣
+    n_one: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 1}∣
+    """
+    uv, wx = 0, 0
+    for i in tids:
+        if sensitive[i] == 1.0:
+            uv += 1
+        elif sensitive[i] == 0.0:
+            wx += 1
+
+    cnt = np.unique(sensitive, return_counts=True)[1]
+    n_zero = cnt[0]
+    n_one = cnt[1]
+
+    if value == 1:
+        return uv / n_one - wx / n_zero
+    else:
+        return -uv / n_one + wx / n_zero
 
 
 def misclassified(tids, y):
     classes, supports = np.unique(y.take(tids), return_counts=True)
     maxindex = np.argmax(supports)
-
+    if tids == [127, 142, 146] and False:
+        print(sum(supports) - supports[maxindex], classes[maxindex])
     return sum(supports) - supports[maxindex], classes[maxindex]
 
 
@@ -104,12 +128,13 @@ def error(tids, k, y, sensitive):
     return mis[0] + abs(discr_add(tids, y, sensitive)) * k, mis[1]
 
 
-def tree_upgrade(tree, y, sensitive):
+def tree_upgrade(tree, y, y_pred, sensitive):
     if 'feat' in tree:
-        tree_upgrade(tree['left'], y, sensitive)
-        tree_upgrade(tree['right'], y, sensitive)
+        tree_upgrade(tree['left'], y, y_pred, sensitive)
+        tree_upgrade(tree['right'], y, y_pred, sensitive)
     else:
-        tree['discrimination_additive'] = discr_add(tree['transactions'], y, sensitive)
+        tree['discrimination_additive_train'] = discr_add(tree['transactions'], y, sensitive)
+        tree['discrimination_additive_pred'] = discr_add(tree['transactions'], y_pred, sensitive)
         tree['misclassified'] = misclassified(tree['transactions'], y)[0]
 
 
@@ -193,10 +218,10 @@ def sum_elem_tree(tree, label, s=None, do_abs=False):
     isFirst = False
     if s is None:
         s = list()
-        isFirst= True
+        isFirst = True
     if 'feat' in tree:
-        sum_elem_tree(tree['left'], label, s=s, do_abs=False)
-        sum_elem_tree(tree['right'], label, s=s, do_abs=True)
+        sum_elem_tree(tree['left'], label, s=s, do_abs=do_abs)
+        sum_elem_tree(tree['right'], label, s=s, do_abs=do_abs)
     elif do_abs:
         s.append(abs(tree[label]))
     else:
@@ -313,9 +338,13 @@ def get_dot_body(treedict, parent=None, left=True):
         misclassified = str(int(treedict["misclassified"])) if treedict["misclassified"] - int(
             treedict["misclassified"]) == 0 else str(
             round(treedict["misclassified"], 3))
-        discr = str(int(treedict["discrimination_additive"])) if treedict["discrimination_additive"] - int(
-            treedict["discrimination_additive"]) == 0 else str(
-            round(treedict["discrimination_additive"], 3))
+        discr = str(int(treedict["discrimination_additive_train"])) if treedict["discrimination_additive_train"] - int(
+            treedict["discrimination_additive_train"]) == 0 else str(
+            round(treedict["discrimination_additive_train"], 3))
+        #TODO
+        discr2 = str(int(treedict["discrimination_additive_pred"])) if treedict["discrimination_additive_pred"] - int(
+            treedict["discrimination_additive_pred"]) == 0 else str(
+            round(treedict["discrimination_additive_pred"], 3))
         """
         true_pos = str(int(treedict["true_pos"])) if treedict["true_pos"] - int(
             treedict["true_pos"]) == 0 else str(
@@ -333,9 +362,9 @@ def get_dot_body(treedict, parent=None, left=True):
         # maxi = max(len(val), len(err))
         # val = val if len(val) == maxi else val + (" " * (maxi - len(val)))
         # err = err if len(err) == maxi else err + (" " * (maxi - len(err)))
-        gstring += "leaf_" + id + " [label=\"{{class|" + val + "}|{error|" + err + "}|{misclassified|" + misclassified + "}|{discrimination|" + discr \
+        gstring += "leaf_" + id + " [label=\"{{class|" + val + "}|{error|" + err + "}|{misclassified|" + misclassified + "}|{discrimination_train|" + discr + "}|{discrimination_pred|" + discr2 \
                    + "}}\"];\n"
-                   #+ "}|{true positive|" + true_pos + "}|{false positive|" + false_pos + "}|{true negative|" + true_neg + "}|{false negative|" + false_neg \
+        # + "}|{true positive|" + true_pos + "}|{false positive|" + false_pos + "}|{true negative|" + true_neg + "}|{false negative|" + false_neg \
 
         gstring += "node_" + parent + " -> leaf_" + id + " [label=" + str(int(left)) + "];\n"
     return gstring
@@ -366,3 +395,37 @@ def export_graphviz(clf):
 
     return graph_string
 
+
+def sklearn_to_pydl(clf, pydl, level):
+    if clf.tree_.feature[level] >= 0:
+        pydl['feat'] = clf.tree_.feature[level]
+        if clf.tree_.feature[clf.tree_.children_left[level]] == -2:
+            level_leaf = clf.tree_.children_left[level]
+            n_sample = clf.tree_.value[level_leaf][0][0] + clf.tree_.value[level_leaf][0][1]
+            value0 = clf.tree_.value[level_leaf][0][0]
+            value1 = clf.tree_.value[level_leaf][0][1]
+            proba0 = clf.tree_.value[level_leaf][0][0] / n_sample
+            proba1 = clf.tree_.value[level_leaf][0][1] / n_sample
+            if proba0 > proba1:
+                value = 0
+            else:
+                value = 1
+            pydl['right'] = {'value': value, 'error': 0, 'values': [value0, value1], 'proba': [proba0, proba1]}
+        else:
+            pydl['right'] = {'feat': clf.tree_.feature[clf.tree_.children_left[level]]}
+        sklearn_to_pydl(clf, pydl['right'], clf.tree_.children_left[level])
+        if clf.tree_.feature[clf.tree_.children_right[level]] == -2:
+            level_leaf = clf.tree_.children_right[level]
+            n_sample = clf.tree_.value[level_leaf][0][0] + clf.tree_.value[level_leaf][0][1]
+            value0 = clf.tree_.value[level_leaf][0][0]
+            value1 = clf.tree_.value[level_leaf][0][1]
+            proba0 = clf.tree_.value[level_leaf][0][0] / n_sample
+            proba1 = clf.tree_.value[level_leaf][0][1] / n_sample
+            if proba0 > proba1:
+                value = 0
+            else:
+                value = 1
+            pydl['left'] = {'value': value, 'error': 0, 'values': [value0, value1], 'proba': [proba0, proba1]}
+        else:
+            pydl['left'] = {'feat': clf.tree_.feature[clf.tree_.children_left[level]]}
+        sklearn_to_pydl(clf, pydl['left'], clf.tree_.children_right[level])
