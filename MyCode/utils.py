@@ -3,6 +3,7 @@ import math
 import uuid
 
 import numpy as np
+import pandas as pd
 from dl85.errors.errors import TreeNotFoundError, SearchFailedError
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import suptitle
@@ -67,6 +68,7 @@ def discr_add(tids, y, sensitive):
     n_one: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 1}∣
     """
     p0, p1 = 0, 0
+
     for i in tids:
         if sensitive[i] == 0.0:
             if y[i] == 1.0:
@@ -74,10 +76,9 @@ def discr_add(tids, y, sensitive):
         elif sensitive[i] == 1.0:
             if y[i] == 1.0:
                 p1 += 1
-
-    cnt = np.unique(sensitive, return_counts=True)[1]
-    n_zero = cnt[0]
-    n_one = cnt[1]
+    cnt_unique = np.unique(sensitive, return_counts=True)[1]
+    n_zero = cnt_unique[0]
+    n_one = cnt_unique[1]
 
     if n_one == 0 and n_zero == 0:
         d = 0
@@ -91,13 +92,14 @@ def discr_add(tids, y, sensitive):
     return d
 
 
+"""
 def discr_add2(tids, sensitive, value):
-    """
+    
     p0: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 0, 𝑥.Class = +}∣
     p1: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 1, 𝑥.Class = +}∣
     n_zero: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 0}∣
     n_one: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 1}∣
-    """
+    
     uv, wx = 0, 0
     for i in tids:
         if sensitive[i] == 1.0:
@@ -113,6 +115,7 @@ def discr_add2(tids, sensitive, value):
         return uv / n_one - wx / n_zero
     else:
         return -uv / n_one + wx / n_zero
+"""
 
 
 def misclassified(tids, y):
@@ -128,14 +131,38 @@ def error(tids, k, y, sensitive):
     return mis[0] + abs(discr_add(tids, y, sensitive)) * k, mis[1]
 
 
-def tree_upgrade(tree, y, y_pred, sensitive):
+def tree_upgrade(tree, y_train, y_pred, sensitive_train):
     if 'feat' in tree:
-        tree_upgrade(tree['left'], y, y_pred, sensitive)
-        tree_upgrade(tree['right'], y, y_pred, sensitive)
+        tree_upgrade(tree['left'], y_train, y_pred, sensitive_train)
+        tree_upgrade(tree['right'], y_train, y_pred, sensitive_train)
     else:
-        tree['discrimination_additive_train'] = discr_add(tree['transactions'], y, sensitive)
-        tree['discrimination_additive_pred'] = discr_add(tree['transactions'], y_pred, sensitive)
-        tree['misclassified'] = misclassified(tree['transactions'], y)[0]
+        tree['discrimination_additive_train'] = discr_add(tree['transactions'], y_train, sensitive_train)
+        tree['discrimination_additive_pred'] = discr_add(tree['transactions'], y_pred, sensitive_train)
+        tree['misclassified'] = misclassified(tree['transactions'], y_train)[0]
+
+
+def tree_upgrade2(tree, y_train, sensitive_train):
+    if 'feat' in tree:
+        tree_upgrade2(tree['left'], y_train, sensitive_train)
+        tree_upgrade2(tree['right'], y_train, sensitive_train)
+    else:
+        tree['discrimination_additive_train'] = discr_add(tree['transactions'], y_train, sensitive_train)
+        tree['misclassified'] = misclassified(tree['transactions'], y_train)[0]
+
+
+def get_discri_test(tree, x_test, y_test, sensitive_test, discri, columns, path=None):
+    if path is None:
+        path = tuple()
+    if 'feat' in tree:
+        tmp = path + ((tree['feat'], 1),)
+        get_discri_test(tree['left'], x_test, y_test, sensitive_test, discri, columns, tmp)
+        tmp = path + ((tree['feat'], 0),)
+        get_discri_test(tree['right'], x_test, y_test, sensitive_test, discri, columns, tmp)
+    else:
+        tmp = pd.DataFrame(x_test, columns=columns).copy()
+        for t in path:
+            tmp = tmp.loc[(tmp[tmp.columns[t[0]]] == t[1])]
+        discri.append(discr_add(tmp.index, y_test, sensitive_test))
 
 
 plt.rcParams['figure.figsize'] = [9, 6]
@@ -341,10 +368,13 @@ def get_dot_body(treedict, parent=None, left=True):
         discr = str(int(treedict["discrimination_additive_train"])) if treedict["discrimination_additive_train"] - int(
             treedict["discrimination_additive_train"]) == 0 else str(
             round(treedict["discrimination_additive_train"], 3))
-        #TODO
-        discr2 = str(int(treedict["discrimination_additive_pred"])) if treedict["discrimination_additive_pred"] - int(
-            treedict["discrimination_additive_pred"]) == 0 else str(
-            round(treedict["discrimination_additive_pred"], 3))
+        # TODO
+        if "discrimination_additive_pred" in treedict:
+            discr2 = str(int(treedict["discrimination_additive_pred"])) if treedict["discrimination_additive_pred"] - int(
+                treedict["discrimination_additive_pred"]) == 0 else str(
+                round(treedict["discrimination_additive_pred"], 3))
+        else:
+            discr2 = "None"
         """
         true_pos = str(int(treedict["true_pos"])) if treedict["true_pos"] - int(
             treedict["true_pos"]) == 0 else str(

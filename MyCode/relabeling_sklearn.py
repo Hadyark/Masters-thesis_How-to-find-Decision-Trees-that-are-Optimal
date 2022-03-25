@@ -3,6 +3,8 @@ import copy
 import numpy as np
 import pandas as pd
 
+from MyCode import utils
+
 
 def discrimination2(dataset):
     length = len(dataset)
@@ -93,8 +95,8 @@ class Leaf:
             self.ratio = self.disc / 0.0000000000000000000000000000000000001
         else:
             self.ratio = self.disc / self.acc
-        #TODO BULSHIT FIX
-        #if self.value[0][0] == self.value[0][1]:
+        # TODO BULSHIT FIX
+        # if self.value[0][0] == self.value[0][1]:
         #    self.ratio = 0
 
     def __str__(self):
@@ -111,65 +113,23 @@ def get_transactions(path, x):
     for e in path:
         col = e[0]
         if e[1] == 'left':
-            cond = 0
+            filtered = filtered.loc[filtered[col] == 0]
         else:
-            cond = 1
-        filtered = filtered.loc[filtered[col] == cond]
+            filtered = filtered.loc[filtered[col] == 1]
     return list(filtered.index)
 
 
-"""
-def leafs_to_relabel(tree, x, y, sensitive, n_zero, n_one, leafs, length, current, path=tuple(), level=0):
-    id = tree.children_left[level]
-    feature = tree.feature[id]
-    tmp = path + ((current, 'left', level, id),)
-    if feature == -2:
-        transactions = get_transactions(tmp, x)
-        leaf = Leaf(tmp, id, 0, 0, 0, 0, transactions)
-        leaf.value = tree.value[id]
-        for id in transactions:
-            if sensitive[id] == 1 and y[id] == 0:
-                leaf.u += 1
-            if sensitive[id] == 1 and y[id] == 1:
-                leaf.v += 1
-            if sensitive[id] == 0 and y[id] == 0:
-                leaf.w += 1
-            if sensitive[id] == 0 and y[id] == 1:
-                leaf.x += 1
-        leaf.u = leaf.u / length
-        leaf.v = leaf.v / length
-        leaf.w = leaf.w / length
-        leaf.x = leaf.x / length
-        leaf.accuracy(n_zero / length, n_one / length)
-        leafs.append(leaf)
-    else:
-        leafs_to_relabel(tree, x, y, sensitive, n_zero, n_one, leafs, length, feature, tmp, level + 1)
+def leafs_discimination(tree, x, y, sensitive, n_zero, n_one, discriminations, length, node_id, path=tuple()):
+    feature = tree.feature[node_id]
 
-    id = tree.children_right[level]
-    feature = tree.feature[id]
-    tmp = path + ((current, 'right', level, id),)
-    if feature == -2:
-        transactions = get_transactions(tmp, x)
-        leaf = Leaf(tmp, id, 0, 0, 0, 0, transactions)
-        leaf.value = tree.value[id]
-        for id in transactions:
-            if sensitive[id] == 1 and y[id] == 0:
-                leaf.u += 1
-            if sensitive[id] == 1 and y[id] == 1:
-                leaf.v += 1
-            if sensitive[id] == 0 and y[id] == 0:
-                leaf.w += 1
-            if sensitive[id] == 0 and y[id] == 1:
-                leaf.x += 1
-        leaf.u = leaf.u / length
-        leaf.v = leaf.v / length
-        leaf.w = leaf.w / length
-        leaf.x = leaf.x / length
-        leaf.accuracy(n_zero / length, n_one / length)
-        leafs.append(leaf)
+    if feature >= 0:
+        tmp = path + ((feature, 'left', node_id),)
+        leafs_discimination(tree, x, y, sensitive, n_zero, n_one, discriminations, length, tree.children_left[node_id], tmp)
+        tmp = path + ((feature, 'right', node_id),)
+        leafs_discimination(tree, x, y, sensitive, n_zero, n_one, discriminations, length, tree.children_right[node_id], tmp)
     else:
-        leafs_to_relabel(tree, x, y, sensitive, n_zero, n_one, leafs, length, feature, tmp, level + 1)
-"""
+        transactions = get_transactions(path, x)
+        discriminations[node_id] = utils.discr_add(transactions, y, sensitive)
 
 
 def leafs_to_relabel(tree, x, y, sensitive, n_zero, n_one, leafs, length, node_id, path=tuple()):
@@ -193,7 +153,7 @@ def leafs_to_relabel(tree, x, y, sensitive, n_zero, n_one, leafs, length, node_i
                 w += 1
             if sensitive[id] == 0 and y[id] == 1:
                 x += 1
-        leaf = Leaf(tmp, node_id, u / length, v / length, w / length, x / length, v+x, u+w, transactions)
+        leaf = Leaf(tmp, node_id, u / length, v / length, w / length, x / length, v + x, u + w, transactions)
         leaf.value = copy.deepcopy(tree.value[node_id])
         leaf.accuracy(n_zero / length, n_one / length)
         if leaf.disc < 0:
@@ -255,7 +215,7 @@ def relab_leaf_limit(tree, x, y, y_pred, sensitive, leaf_limit):
 
 def browse_and_relab(clf, node_id):
     if clf.tree_.value[node_id][0][0] == clf.tree_.value[node_id][0][1]:
-        clf.tree_.value[node_id][0][1] +=1
+        clf.tree_.value[node_id][0][1] += 1
         return
     clf.tree_.value[node_id][0][0], clf.tree_.value[node_id][0][1] = clf.tree_.value[node_id][0][1], \
                                                                      clf.tree_.value[node_id][0][0]

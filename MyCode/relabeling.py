@@ -127,7 +127,6 @@ def leafs_to_relabel(tree, y, sensitive, n_zero, n_one, leafs, length, path=tupl
         else:
             tree["acc"] = p - n
             tree["disc"] = -(tree["u"] + tree["v"]) / n_one + (tree["w"] + tree["x"]) / n_zero
-        tree["discrimination_additive3"] = utils.discr_add2(tree["transactions"], sensitive, tree["value"])
         leaf = Leaf(path, tree["u"] / length, tree["v"] / length, tree["w"] / length, tree["x"] / length)
         # leaf = Leaf(path, tree["u"], tree["v"], tree["w"], tree["x"])
         leaf.value = tree["value"]
