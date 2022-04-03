@@ -68,7 +68,8 @@ def discr_add(tids, y, sensitive):
     n_one: ∣{𝑥 ∈ 𝐷 ∣ 𝑥.Sensitive = 1}∣
     """
     p0, p1 = 0, 0
-
+    #TODO Copier le projet avant
+    #TODO remplacer y par la prediction
     for i in tids:
         if sensitive[i] == 0.0:
             if y[i] == 1.0:
@@ -79,6 +80,7 @@ def discr_add(tids, y, sensitive):
     cnt_unique = np.unique(sensitive, return_counts=True)[1]
     n_zero = cnt_unique[0]
     n_one = cnt_unique[1]
+    print((p0, p1), (n_zero, n_one))
 
     if n_one == 0 and n_zero == 0:
         d = 0
@@ -88,7 +90,7 @@ def discr_add(tids, y, sensitive):
         d = p0 / n_zero
     else:
         d = (p0 / n_zero) - (p1 / n_one)
-
+    print(f"({p0} / {n_zero}) - ({p1} / {n_one}))")
     return d
 
 
@@ -117,12 +119,10 @@ def discr_add2(tids, sensitive, value):
         return -uv / n_one + wx / n_zero
 """
 
-
+#TODO choisir l'error de la meilleur classe
 def misclassified(tids, y):
     classes, supports = np.unique(y.take(tids), return_counts=True)
     maxindex = np.argmax(supports)
-    if tids == [127, 142, 146] and False:
-        print(sum(supports) - supports[maxindex], classes[maxindex])
     return sum(supports) - supports[maxindex], classes[maxindex]
 
 

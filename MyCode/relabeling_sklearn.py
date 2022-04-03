@@ -67,6 +67,7 @@ def discrimination(y, y_pred, sensitive):
 
 class Leaf:
     def __init__(self, path, node_id, u, v, w, x, p, n, transactions=None):
+        self.acc2 = None
         self.path = path
         self.node_id = node_id
         self.acc = None
@@ -86,10 +87,16 @@ class Leaf:
 
         if self.p > self.n:
             self.acc = n - p
+            self.acc2 = (self.u + self.w) - (self.v + self.x)
             self.disc = (self.u + self.v) / n_one - (self.w + self.x) / n_zero
+            self.d = f"{(self.u + self.v)} / {n_one} - {self.w + self.x} / {n_zero}\n" \
+                     f"{p, n, self.p, self.n, p>n}"
         else:
             self.acc = p - n
+            self.acc2 = (self.v + self.x) - (self.u + self.w)
             self.disc = -(self.u + self.v) / n_one + (self.w + self.x) / n_zero
+            self.d = f"-{self.u + self.v} / {n_one} + {self.w + self.x} / {n_zero}\n" \
+                     f"{p, n, self.p, self.n, p>n}"
 
         if self.acc == 0:
             self.ratio = self.disc / 0.0000000000000000000000000000000000001
@@ -100,13 +107,16 @@ class Leaf:
         #    self.ratio = 0
 
     def __str__(self):
-        return f"Path: {self.path} \naccuracy: {self.acc} \nnode_id: {self.node_id} \ndiscrimination: {self.disc} \nratio: {self.ratio} " \
-               f"\ncontigency: \n{[self.u, self.v]}\n{[self.w, self.x]}" \
+        return f"Path: format -> (feature, type, node id)\n{self.path} " \
+               f"\nnode_id: {self.node_id} " \
+               f"\nThe effect of relabeling the leaf on accuracy: {self.acc} or {self.acc2} " \
+               f"\nThe effect of relabeling the leaf on discrimination: {self.disc} " \
+               f"\n{self.d}" \
+               f"\nratio: {self.ratio} \ncontingency table: \n{[self.u, self.v]}\n{[self.w, self.x]}" \
                f"\ntransactions: {self.transactions}"
 
     def __repr__(self):
         return f"{self.path}"
-
 
 def get_transactions(path, x):
     filtered = pd.DataFrame(x)
