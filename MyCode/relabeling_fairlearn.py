@@ -151,7 +151,7 @@ class Leaf:
         return f"{self.path}"
 
 
-def get_transactions_by_leaf(path, x):
+def get_transactions_by_leaf(clf, path, x):
     """
 
     :param path: A list of tuples representing a path to a leaf from the root node where a tuple is a leaf in the tree.
@@ -164,10 +164,13 @@ def get_transactions_by_leaf(path, x):
     filtered = pd.DataFrame(x)
     for tupl in path:
         feature = tupl[0]
+        node_id = tupl[2]
         if tupl[1] == 'left':
-            filtered = filtered.loc[filtered[feature] == 0]
+            filtered = filtered.loc[filtered[feature] <= clf.tree_.threshold[node_id]]
+        elif tupl[1] == 'right':
+            filtered = filtered.loc[filtered[feature] > clf.tree_.threshold[node_id]]
         else:
-            filtered = filtered.loc[filtered[feature] == 1]
+            raise Exception("Should not reach here")
     return list(filtered.index)
 
 
@@ -192,7 +195,7 @@ def get_leaves_candidates(clf, x, y, sensitive, cnt, length, leaves, node_id=0, 
         tmp_path = path + ((feature, 'right', node_id),)
         get_leaves_candidates(clf, x, y, sensitive, cnt, length, leaves, clf.tree_.children_right[node_id], tmp_path)
     else:
-        transactions = get_transactions_by_leaf(path, x)
+        transactions = get_transactions_by_leaf(clf, path, x)
         tmp_path = path + ((feature, 'leaf', node_id),)
 
         u, v, w, x = 0, 0, 0, 0
