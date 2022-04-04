@@ -80,7 +80,6 @@ def discr_add(tids, y, sensitive):
     cnt_unique = np.unique(sensitive, return_counts=True)[1]
     n_zero = cnt_unique[0]
     n_one = cnt_unique[1]
-    print((p0, p1), (n_zero, n_one))
 
     if n_one == 0 and n_zero == 0:
         d = 0
@@ -90,7 +89,7 @@ def discr_add(tids, y, sensitive):
         d = p0 / n_zero
     else:
         d = (p0 / n_zero) - (p1 / n_one)
-    print(f"({p0} / {n_zero}) - ({p1} / {n_one}))")
+
     return d
 
 
