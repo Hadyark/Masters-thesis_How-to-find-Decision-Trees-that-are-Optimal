@@ -1,8 +1,4 @@
-import copy
-
 import numpy as np
-
-from MyCode import utils
 
 
 def discrimination2(dataset):
