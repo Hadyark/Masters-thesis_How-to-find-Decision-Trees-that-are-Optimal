@@ -1,0 +1,17 @@
+digraph Tree { 
+graph [ranksep=0]; 
+node [shape=record]; 
+node_5efc3647_1154_4222_b963_5ea883dfc590 [label="{{feat|9}}"];
+node_26199b05_7524_49be_8c65_eea8f8cba69e [label="{{feat|2}}"];
+node_5efc3647_1154_4222_b963_5ea883dfc590 -> node_26199b05_7524_49be_8c65_eea8f8cba69e [label=1];
+leaf_950a725d_3170_4328_a1e1_d0ccf2825319 [label="{{class|1}|{error|15}|{misclassified|15}|{discrimination_train|-0.035}|{discrimination_pred|-0.135}}"];
+node_26199b05_7524_49be_8c65_eea8f8cba69e -> leaf_950a725d_3170_4328_a1e1_d0ccf2825319 [label=1];
+leaf_c3e16f17_6940_4dc6_a3bb_7b5f0dd7ef19 [label="{{class|1}|{error|3}|{misclassified|3}|{discrimination_train|0.126}|{discrimination_pred|0.131}}"];
+node_26199b05_7524_49be_8c65_eea8f8cba69e -> leaf_c3e16f17_6940_4dc6_a3bb_7b5f0dd7ef19 [label=0];
+node_ab67c8b8_6020_4767_851f_9bdb938fe721 [label="{{feat|10}}"];
+node_5efc3647_1154_4222_b963_5ea883dfc590 -> node_ab67c8b8_6020_4767_851f_9bdb938fe721 [label=0];
+leaf_4f6e111b_1df4_4a18_b486_b8e6ded42228 [label="{{class|0}|{error|0}|{misclassified|0}|{discrimination_train|0.187}|{discrimination_pred|0}}"];
+node_ab67c8b8_6020_4767_851f_9bdb938fe721 -> leaf_4f6e111b_1df4_4a18_b486_b8e6ded42228 [label=1];
+leaf_57b260f8_99ef_4790_9f88_3859d6674934 [label="{{class|0}|{error|10}|{misclassified|10}|{discrimination_train|0.043}|{discrimination_pred|0}}"];
+node_ab67c8b8_6020_4767_851f_9bdb938fe721 -> leaf_57b260f8_99ef_4790_9f88_3859d6674934 [label=0];
+}

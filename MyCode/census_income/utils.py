@@ -1,5 +1,3 @@
-import ast
-import math
 import uuid
 
 import numpy as np
@@ -12,6 +10,37 @@ from sklearn.exceptions import NotFittedError
 _COLORS = ['#8b4513', '#006400', '#4682b4', '#4b0082', '#ff0000', '#00ff7f', '#00ffff', '#0000ff', '#ffff54',
            '#ff1493', '#ffe4c4']
 
+def perf_measure(y_true, y_pred, sensitive):
+    TP0 = 0
+    FP0 = 0
+    TN0 = 0
+    FN0 = 0
+    TP1 = 0
+    FP1 = 0
+    TN1 = 0
+    FN1 = 0
+
+    for i in range(len(y_pred)):
+        if sensitive[i] == 0:
+            if y_true[i]==y_pred[i]==1:
+                TP0 += 1
+            if y_pred[i]==1 and y_true[i]!=y_pred[i]:
+                FP0 += 1
+            if y_true[i]==y_pred[i]==0:
+                TN0 += 1
+            if y_pred[i]==0 and y_true[i]!=y_pred[i]:
+                FN0 += 1
+        elif sensitive[i] == 1:
+            if y_true[i]==y_pred[i]==1:
+                TP1 += 1
+            if y_pred[i]==1 and y_true[i]!=y_pred[i]:
+                FP1 += 1
+            if y_true[i]==y_pred[i]==0:
+                TN1 += 1
+            if y_pred[i]==0 and y_true[i]!=y_pred[i]:
+                FN1 += 1
+                
+    return ((TP0, FP0, FN0, TN0), (TP1, FP1, FN1, TN1))
 
 def train_test_split(random_state, X, y, sensitive):
     index_train = list(X.sample(frac=0.8, random_state=random_state).index)

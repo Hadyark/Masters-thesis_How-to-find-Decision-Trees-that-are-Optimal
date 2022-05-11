@@ -1,0 +1,33 @@
+digraph Tree { 
+graph [ranksep=0]; 
+node [shape=record]; 
+node_086ec36b_1dc0_490e_8f20_3f9999a09f36 [label="{{feat|62}}"];
+node_58049204_3ab0_42e9_a76f_5472852b0dd1 [label="{{feat|12}}"];
+node_086ec36b_1dc0_490e_8f20_3f9999a09f36 -> node_58049204_3ab0_42e9_a76f_5472852b0dd1 [label=1];
+node_eff5a2f8_357b_4d4a_bd49_1e8bb3b5a5f3 [label="{{feat|35}}"];
+node_58049204_3ab0_42e9_a76f_5472852b0dd1 -> node_eff5a2f8_357b_4d4a_bd49_1e8bb3b5a5f3 [label=1];
+leaf_4c4d838d_ee20_4372_8a91_bcd6a96d9757 [label="{{class|0}|{error|0}|{misclassified|0}|{discrimination_train|0}|{discrimination_pred|0}}"];
+node_eff5a2f8_357b_4d4a_bd49_1e8bb3b5a5f3 -> leaf_4c4d838d_ee20_4372_8a91_bcd6a96d9757 [label=1];
+leaf_e07a4db8_43b9_4d01_a0ba_d93d2e34ade6 [label="{{class|1}|{error|3.008}|{misclassified|3}|{discrimination_train|0.001}|{discrimination_pred|-0.004}}"];
+node_eff5a2f8_357b_4d4a_bd49_1e8bb3b5a5f3 -> leaf_e07a4db8_43b9_4d01_a0ba_d93d2e34ade6 [label=0];
+node_7b583a69_007a_4d97_a488_e4df45861ba1 [label="{{feat|34}}"];
+node_58049204_3ab0_42e9_a76f_5472852b0dd1 -> node_7b583a69_007a_4d97_a488_e4df45861ba1 [label=0];
+leaf_ef4c3bc7_eb36_416c_8a94_b96222b3b27c [label="{{class|1}|{error|3.268}|{misclassified|3}|{discrimination_train|0.027}|{discrimination_pred|0.039}}"];
+node_7b583a69_007a_4d97_a488_e4df45861ba1 -> leaf_ef4c3bc7_eb36_416c_8a94_b96222b3b27c [label=1];
+leaf_3faa172c_2747_40da_bedb_f96d9e3a6ed0 [label="{{class|0}|{error|7.157}|{misclassified|7}|{discrimination_train|-0.016}|{discrimination_pred|0}}"];
+node_7b583a69_007a_4d97_a488_e4df45861ba1 -> leaf_3faa172c_2747_40da_bedb_f96d9e3a6ed0 [label=0];
+node_00bd7780_4cb6_409a_900b_c88605da76a0 [label="{{feat|15}}"];
+node_086ec36b_1dc0_490e_8f20_3f9999a09f36 -> node_00bd7780_4cb6_409a_900b_c88605da76a0 [label=0];
+node_b0f41ed3_d000_4099_8155_d903f2f8d929 [label="{{feat|2}}"];
+node_00bd7780_4cb6_409a_900b_c88605da76a0 -> node_b0f41ed3_d000_4099_8155_d903f2f8d929 [label=1];
+leaf_eb788fa1_1dbd_463e_aa56_a520cc3110f6 [label="{{class|1}|{error|0.026}|{misclassified|0}|{discrimination_train|0.003}|{discrimination_pred|0.003}}"];
+node_b0f41ed3_d000_4099_8155_d903f2f8d929 -> leaf_eb788fa1_1dbd_463e_aa56_a520cc3110f6 [label=1];
+leaf_0541493e_6b7e_4213_a383_c249f4f967eb [label="{{class|0}|{error|3.044}|{misclassified|3}|{discrimination_train|-0.004}|{discrimination_pred|0}}"];
+node_b0f41ed3_d000_4099_8155_d903f2f8d929 -> leaf_0541493e_6b7e_4213_a383_c249f4f967eb [label=0];
+node_47246ffa_7182_4dc9_a30a_548ee11f7fba [label="{{feat|30}}"];
+node_00bd7780_4cb6_409a_900b_c88605da76a0 -> node_47246ffa_7182_4dc9_a30a_548ee11f7fba [label=0];
+leaf_9a0f625a_608a_48da_af70_c90f90e1ef71 [label="{{class|0}|{error|1.069}|{misclassified|1}|{discrimination_train|-0.007}|{discrimination_pred|0}}"];
+node_47246ffa_7182_4dc9_a30a_548ee11f7fba -> leaf_9a0f625a_608a_48da_af70_c90f90e1ef71 [label=1];
+leaf_7576fdf1_d194_405c_8613_43ecc75182b7 [label="{{class|1}|{error|8.802}|{misclassified|8}|{discrimination_train|0.08}|{discrimination_pred|0.058}}"];
+node_47246ffa_7182_4dc9_a30a_548ee11f7fba -> leaf_7576fdf1_d194_405c_8613_43ecc75182b7 [label=0];
+}
