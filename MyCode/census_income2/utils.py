@@ -4,7 +4,7 @@ import uuid
 
 import numpy as np
 import pandas as pd
-from dl85.errors.errors import TreeNotFoundError, SearchFailedError
+from pydl85.errors.errors import TreeNotFoundError, SearchFailedError
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import suptitle
 from sklearn.exceptions import NotFittedError
