@@ -93,14 +93,18 @@ class Leaf:
         return f"{self.path}"
 
 
-def leafs_to_relabel(tree, y, sensitive, n_zero, n_one, leafs, length, path=tuple()):
+def leafs_to_relabel(tree, y, sensitive, n_zero, n_one, leafs, 
+                     length, path=tuple()):
+    # Recursively traverses the tree
     if 'feat' in tree:
         tmp = path + ((tree['feat'], 'left'),)
-        leafs_to_relabel(tree['left'], y, sensitive, n_zero, n_one, leafs, length, tmp)
+        leafs_to_relabel(tree['left'], y, sensitive, n_zero, n_one, 
+                         leafs, length, tmp)
         tmp = path + ((tree['feat'], 'right'),)
-        leafs_to_relabel(tree['right'], y, sensitive, n_zero, n_one, leafs, length, tmp)
+        leafs_to_relabel(tree['right'], y, sensitive, n_zero, n_one, 
+                         leafs, length, tmp)
     else:
-        #tree = copy.deepcopy(tree)
+        # Count the number items
         tree["u"] = 0
         tree["v"] = 0
         tree["w"] = 0
@@ -114,19 +118,24 @@ def leafs_to_relabel(tree, y, sensitive, n_zero, n_one, leafs, length, path=tupl
                 tree["w"] += 1
             if sensitive[id] == 0 and y[id] == 1:
                 tree["x"] += 1
-                """"""
+                
         n = (tree["u"] + tree["w"])
         p = (tree["v"] + tree["x"])
         if tree["value"] == 1:
             tree["acc"] = n - p
-            tree["disc"] = (tree["u"] + tree["v"]) / n_one - (tree["w"] + tree["x"]) / n_zero
+            tree["disc"] = (tree["u"] + tree["v"]) / n_one - (
+                tree["w"] + tree["x"]) / n_zero
         else:
             tree["acc"] = p - n
-            tree["disc"] = -(tree["u"] + tree["v"]) / n_one + (tree["w"] + tree["x"]) / n_zero
-        leaf = Leaf(path, tree["u"] / length, tree["v"] / length, tree["w"] / length, tree["x"] / length)
-        # leaf = Leaf(path, tree["u"], tree["v"], tree["w"], tree["x"])
+            tree["disc"] = -(tree["u"] + tree["v"]) / n_one + (
+                tree["w"] + tree["x"]) / n_zero
+        leaf = Leaf(path, tree["u"] / length, tree["v"] / length, 
+                    tree["w"] / length, tree["x"] / length)
+        
         leaf.value = tree["value"]
         leaf.accuracy(n_zero / length, n_one / length)
+        # If the leaf can reduce the discrimination
+        # add it toe the list of candidates 
         if leaf.disc < 0:
             leafs.append(leaf)
 

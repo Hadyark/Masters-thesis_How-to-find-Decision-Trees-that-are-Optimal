@@ -141,7 +141,7 @@ def error(tids, k, y, sensitive):
         if error0 < error1:
             return error0, classes[0]
         else:
-            return error1, classes[1] + abs(discr_add2(tids, y, sensitive)) * k
+            return error1, classes[1]
     elif len(classes) == 1:
         if classes[0] == 0:
             error = summ - supports[0]

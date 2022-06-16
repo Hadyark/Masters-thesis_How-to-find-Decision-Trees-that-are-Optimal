@@ -4,7 +4,7 @@ import uuid
 
 import numpy as np
 import pandas as pd
-from dl85.errors.errors import TreeNotFoundError, SearchFailedError
+from pydl85.errors.errors import TreeNotFoundError, SearchFailedError
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import suptitle
 from sklearn.exceptions import NotFittedError
@@ -172,7 +172,7 @@ def get_discri_test(tree, x_test, y_test, sensitive_test, discri, columns, path=
 plt.rcParams['figure.figsize'] = [9, 6]
 
 
-def plot_mean(x_axe, y_axe, r, s1, s2):
+def plot_mean(x_axe, y_axe, r, s1, s2, nameX=None, nameY=None, f=None):
     plt.figure(figsize=(9, 6))
     # style = ['solid', 'dotted', ':', '-.', 'dashed']
     style = ['solid', '–', '—', '-.', ':', '.', 'o', ',', 'v', '^']
@@ -184,10 +184,19 @@ def plot_mean(x_axe, y_axe, r, s1, s2):
             df1 = r.loc[(r["k"] == k) & (r["depth"] == depth)]
             y_values.append(df1[y_axe].mean())
         plt.plot(r['depth'].unique(), y_values, label="k=" + str(k), color=colors.pop(), linestyle=style[0])
-    ax.set_xlabel(x_axe)
-    ax.set_ylabel(y_axe)
+    if nameX==None:
+        ax.set_xlabel(x_axe)
+    else:
+        ax.set_xlabel(nameX)
+    if nameY==None:
+        ax.set_ylabel(y_axe)
+    else:
+        ax.set_ylabel(nameY)
+    
     ax.legend()
     ax.set_ylim(s1, s2)
+    if f != None:
+        plt.savefig('plots/'+f+'.svg',dpi=350)
     plt.show()
 
 

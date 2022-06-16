@@ -179,15 +179,18 @@ def get_transactions_by_leaf(clf, path, x):
         node_id = tupl[0]
         feature = tupl[1]
         if tupl[2] == 'left':
-            filtered = filtered.loc[filtered[feature] <= clf.tree_.threshold[node_id]]
+            filtered = filtered.loc[
+                filtered[feature] <= clf.tree_.threshold[node_id]]
         elif tupl[2] == 'right':
-            filtered = filtered.loc[filtered[feature] > clf.tree_.threshold[node_id]]
+            filtered = filtered.loc[
+                filtered[feature] > clf.tree_.threshold[node_id]]
         else:
             raise Exception("Should not reach here")
     return list(filtered.index)
 
 
-def get_leaves_candidates(clf, x, y, sensitive, cnt, length, leaves, node_id=0, path=tuple()):
+def get_leaves_candidates(clf, x, y, sensitive, cnt, length, 
+                          leaves, node_id=0, path=tuple()):
     """
     Recovers leaves that could be used for relabeling.
 
@@ -202,8 +205,10 @@ def get_leaves_candidates(clf, x, y, sensitive, cnt, length, leaves, node_id=0, 
     :param node_id: The identifier of the node we are in when we traverse the tree.
     :param path: A list of tuples representing a path to a leaf from the root node.
     """
+    
     feature = clf.tree_.feature[node_id]
     if feature >= 0:
+        # Recursively traverses the tree
         tmp_path = path + ((node_id, feature, 'left'),)
         get_leaves_candidates(clf, x, y, sensitive, cnt, length, leaves,
                               clf.tree_.children_left[node_id], tmp_path)
@@ -211,9 +216,11 @@ def get_leaves_candidates(clf, x, y, sensitive, cnt, length, leaves, node_id=0, 
         get_leaves_candidates(clf, x, y, sensitive, cnt, length, leaves,
                               clf.tree_.children_right[node_id], tmp_path)
     else:
+        # Retrieves the list of transactions classified by the leaf
         transactions = get_transactions_by_leaf(clf, path, x)
         tmp_path = path + ((node_id, feature, 'leaf'),)
-
+        
+        # Create the contingency table for each sheet
         u, v, w, x = 0, 0, 0, 0
         for transaction in transactions:
             if sensitive[transaction] == 1:
